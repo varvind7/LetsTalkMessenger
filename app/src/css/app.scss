@@ -1,5 +1,6 @@
 @import 'variable';
 @import "https://fonts.googleapis.com/css?family=Open+Sans:400,600";
+@import 'font';
 body,html {
     margin: 0;
     padding: 0;
@@ -28,14 +29,31 @@ body {
         flex-direction: row;
         border-bottom: 1px solid $border-color;
         .left {
-
             width: $left-sidebar-width;
-            line-height: $header-height;
-            padding: 0 10px;
-            .actions {
-                button {
-                    
-                }
+            position: relative;
+            .left-action {
+                position: absolute;
+                left: 8px;
+                top: 0;
+
+            }
+            .right-action {
+                position: absolute;
+                right: 8px;
+                top: 0;
+            }
+            h2{
+                line-height: $header-height;
+                font-size: 14px;
+                font-weight: 600;
+                display: block;
+                text-align: center;
+            }
+            button{
+                line-height: $header-height;
+                border: 0 none;
+                font-size: 20px;
+                cursor: pointer;
             }
 
         }
@@ -189,6 +207,8 @@ body {
 }
 
 .chanels {
+    overflow-y: auto;
+    height: 100%;
     .chanel {
         cursor: pointer;
         display: flex;
@@ -255,4 +275,56 @@ h2.title {
     font-size: 16px;
     font-weight: 600;
     color: rgb(0,0, 0);
+}
+.toolbar {
+    height: $header-height;
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    label{
+        line-height: $header-height;
+    }
+    input{
+        height: 30px;
+        line-height: 30px;
+        margin-top: 10px;
+        border: 0 none;
+    }
+    .search-user{
+        min-width: 100px;
+        position: absolute;
+        left: 0;
+        top: $header-height;
+        z-index: 1;
+        border: 1px solid $border-color;
+        border-top: 0 none;
+        .user-list{
+            display: flex;
+            flex-direction: column;
+            .user{
+                display: flex;
+                flex-direction: row;
+                padding: 5px;
+                border-bottom: 1px solid $border-color;
+                cursor: pointer;
+                img{
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    margin-top: 10px;
+                }
+                h2{
+                    padding-left: 0px;
+                    flex-grow: 1;
+                    font-size: 14px;
+                }
+                &:last-child{
+                    border-bottom: 0 none;
+                }
+                &:hover{
+                    background: rgba(0,0,0,0.2);
+                }
+            }
+        }
+    }
 }

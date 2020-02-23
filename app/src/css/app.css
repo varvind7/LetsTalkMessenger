@@ -1,4 +1,47 @@
 @import "https://fonts.googleapis.com/css?family=Open+Sans:400,600";
+@font-face {
+  font-family: "untitled-font-1";
+  src: url("./fonts/untitled-font-1.eot");
+  src: url("./fonts/untitled-font-1.eot?#iefix") format("embedded-opentype"), url("./fonts/untitled-font-1.woff") format("woff"), url("./fonts/untitled-font-1.ttf") format("truetype"), url("./fonts/untitled-font-1.svg#untitled-font-1") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+[data-icon]:before {
+  font-family: "untitled-font-1" !important;
+  content: attr(data-icon);
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[class^=icon-]:before,
+[class*=" icon-"]:before {
+  font-family: "untitled-font-1" !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-pencil-square-o:before {
+  content: "a";
+}
+
+.icon-cog:before {
+  content: "b";
+}
+
+.icon-paper-plane:before {
+  content: "c";
+}
+
 body, html {
   margin: 0;
   padding: 0;
@@ -29,8 +72,30 @@ body {
 }
 .app-messenger .header .left {
   width: 200px;
+  position: relative;
+}
+.app-messenger .header .left .left-action {
+  position: absolute;
+  left: 8px;
+  top: 0;
+}
+.app-messenger .header .left .right-action {
+  position: absolute;
+  right: 8px;
+  top: 0;
+}
+.app-messenger .header .left h2 {
   line-height: 50px;
-  padding: 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  display: block;
+  text-align: center;
+}
+.app-messenger .header .left button {
+  line-height: 50px;
+  border: 0 none;
+  font-size: 20px;
+  cursor: pointer;
 }
 .app-messenger .header .content {
   flex-grow: 1;
@@ -142,7 +207,12 @@ body {
   color: ivory;
 }
 
+.chanels {
+  overflow-y: auto;
+  height: 100%;
+}
 .chanels .chanel {
+  cursor: pointer;
   display: flex;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   padding: 8px 0;
@@ -165,6 +235,9 @@ body {
 }
 .chanels .chanel .chanel-info p {
   font-size: 12px;
+}
+.chanels .chanel.active {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .members .member {
@@ -195,6 +268,59 @@ h2.title {
   font-size: 16px;
   font-weight: 600;
   color: black;
+}
+
+.toolbar {
+  height: 50px;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+}
+.toolbar label {
+  line-height: 50px;
+}
+.toolbar input {
+  height: 30px;
+  line-height: 30px;
+  margin-top: 10px;
+  border: 0 none;
+}
+.toolbar .search-user {
+  min-width: 100px;
+  position: absolute;
+  left: 0;
+  top: 50px;
+  z-index: 1;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 0 none;
+}
+.toolbar .search-user .user-list {
+  display: flex;
+  flex-direction: column;
+}
+.toolbar .search-user .user-list .user {
+  display: flex;
+  flex-direction: row;
+  padding: 5px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+.toolbar .search-user .user-list .user img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-top: 10px;
+}
+.toolbar .search-user .user-list .user h2 {
+  padding-left: 0px;
+  flex-grow: 1;
+  font-size: 14px;
+}
+.toolbar .search-user .user-list .user:last-child {
+  border-bottom: 0 none;
+}
+.toolbar .search-user .user-list .user:hover {
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /*# sourceMappingURL=app.css.map */
