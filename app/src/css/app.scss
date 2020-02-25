@@ -184,8 +184,8 @@ body {
             }
             .message-text {
 
-                background: $body-color;
-                color: ivory;
+                background: rgba(0, 0,0, 0.05);
+
                 padding: 10px;
                 border-radius: 10px;
 
@@ -213,7 +213,8 @@ body {
         cursor: pointer;
         display: flex;
         border-bottom: 1px solid $border-color;
-        padding: 8px 0;
+        padding: 8px;
+        overflow: hidden;
         .user-image {
             width: 30px;
             img {
@@ -226,12 +227,16 @@ body {
         .chanel-info {
             flex-grow: 1;
             padding-left: 8px;
+            padding-right: 8px;
+            overflow: hidden;
             h2 {
-                font-size: 14px;
-                font-weight: 600;
+                font-size: 13px;
+                font-weight: 400;
+                white-space: nowrap;
             }
             p {
                 font-size: 12px;
+                white-space: nowrap;    
 
             }
 

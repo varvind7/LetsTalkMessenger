@@ -4,7 +4,8 @@ import classNames from 'classnames';
 import { OrderedMap } from 'immutable'
 import _ from 'lodash'
 import { ObjectID } from '../helpers/objectid'
-import SearchUser from './search-user'
+import SearchUser from './search-user';
+import moment from 'moment';
 
 class Messenger extends Component {
     constructor(props) {
@@ -13,15 +14,32 @@ class Messenger extends Component {
         this.state = {
             height: window.innerHeight,
             newMessage: 'Hello There...',
-            searchUser: ""
+            searchUser: "",
+            showSearchUser: false,
 
         }
         this._onResize = this._onResize.bind(this);
-        this.addTestMessages = this.addTestMessages.bind(this);
+
         this.handleSend = this.handleSend.bind(this);
         this.renderMessage = this.renderMessage.bind(this);
         this.scrollToBottom = this.scrollToBottom.bind(this);
         this._onCreateChannel = this._onCreateChannel.bind(this);
+        this.renderChannelTitle = this.renderChannelTitle.bind(this);
+    }
+
+    renderChannelTitle(channel={}) {
+        const {store} = this.props;
+        
+        const members=store.getMembersFromChannel(channel);
+
+        const names = [];
+        members.forEach((user) => {
+            const name = _.get(user,'name');
+            names.push(name);
+        });
+        console.log(names);
+
+        return <h2>{_.join(names,',')}</h2>
     }
 
     _onCreateChannel() {
@@ -31,12 +49,7 @@ class Messenger extends Component {
             _id: channelId,
             title: "New Message",
             lastMessage: "",
-            members: new OrderedMap({
-                '1': true,
-                '2': true,
-                '3': true,
-                '4': true,
-            }),
+            members: new OrderedMap(),
             messages: new OrderedMap(),
             isNew: true,
             created: new Date()
@@ -104,69 +117,12 @@ class Messenger extends Component {
     componentDidMount() {
         console.log("Component Did Mount");
         window.addEventListener('resize', this._onResize);
-        this.addTestMessages();
-    }
-
-
-
-    addTestMessages() {
-
-        const { store } = this.props;
-
-        //create test messages
-        let isMe = false;
-        for (let i = 0; i < 100; i++) {
-            isMe = false;
-            if (i % 2 === 0) {
-                isMe = true;
-            }
-            const newMsg = {
-                _id: `${i}`,
-                author: `Author ${i}`,
-                body: `The body of message ${i}`,
-                avatar: avatar,
-                me: isMe,
-            }
-
-            store.addMessage(i, newMsg);
-            //update the component and re render as we have added more messages.
-            //  this.setState({
-            //      lastUpdated: new Date(),
-            //  })
-            //instead of the above code the other way to do the same is 
-
-            //  this.forceUpdate();
-
-
-        }
-
-        //cretate test channels
-        for (let c = 0; c < 10; c++) {
-
-            const newChannel = {
-                _id: `${c}`,
-                title: `Channel title ${c}`,
-                lastMessage: `Hey there this is my last msg..${c}`,
-                members: new OrderedMap({
-                    '1': true,
-                    '2': true,
-                    '3': true,
-                    '4': true,
-                }),
-                messages: new OrderedMap(),
-                created: new Date()
-            }
-
-            const msgId = `${c}`;
-            const moreMsgId = `${c + 1}`;
-
-            newChannel.messages = newChannel.messages.set(msgId, true);
-            newChannel.messages = newChannel.messages.set(moreMsgId, true);
-
-            store.addChannel(c, newChannel);
-        }
 
     }
+
+
+
+  
     componentWillUnmount() {
         window.removeEventListener('resize', this._onResize)
 
@@ -198,18 +154,34 @@ class Messenger extends Component {
                         <h2>Messenger</h2>
                     </div>
                     <div className="content">
-                        {_.get(activeChannel, 'isNew') ? <div className="toolbar">
+                        {_.get(activeChannel, 'isNew') ?  <div className="toolbar">
                             <label>To:</label>
                             <input placeholder="Type name of person..." onChange={(event) => {
+                               
                                 const searchUserText = _.get(event, 'target.value');
                                 this.setState({
-                                    searchUser: searchUserText
+                                    searchUser: searchUserText,
+                                    showSearchUser:true,
                                 });
                             }
                         }
                                 type="text" value={this.state.searchUser} />
-                        <SearchUser search={this.state.searchUser} store={store}/>
+                        {this.state.showSearchUser?<SearchUser
+                        onSelect={(user) => {
                             
+                            this.setState({
+                                showSearchUser:false,
+                                searchUser:'',
+                            },() => {
+
+                                const userId= _.get(user,'_id');
+
+                                const channelId = _.get(activeChannel,'_id');
+                                store.addUserToChannel(channelId,userId);
+                            });
+                        }}
+                        search={this.state.searchUser} store={store}/>:null}
+                             
                     </div> : <h2>{_.get(activeChannel, 'title', '')}</h2> }
 
                     </div>
@@ -239,7 +211,7 @@ class Messenger extends Component {
                                             <img src={avatar} alt="" />
                                         </div>
                                         <div className="chanel-info">
-                                            <h2>{channel.title}</h2>
+                                            {this.renderChannelTitle(channel)}
                                             <p>{channel.lastMessage}</p>
                                         </div>
                                     </div>
@@ -274,7 +246,7 @@ class Messenger extends Component {
 
                         </div>
 
-                        <div className="messenger-input">
+                        {activeChannel?<div className="messenger-input">
 
                             <div className="text-input">
                                 <textarea onKeyUp={(event) => {
@@ -293,11 +265,13 @@ class Messenger extends Component {
 
                                 <button onClick={this.handleSend} className="send">Send</button>
                             </div>
-                        </div>
+                        </div>:null }
+
+
                     </div>
 
                     <div className="sidebar-right">
-                        <h2 className="title">Members</h2>
+                        {members.size >0 ?<div> <h2 className="title">Members</h2>
 
                         <div className="members">
                             {members.map((member, key) => {
@@ -305,11 +279,11 @@ class Messenger extends Component {
                                 return (
                                     <div key={key} className="member">
                                         <div className="user-image">
-                                            <img src={avatar} alt="" />
+                                            <img src={_.get(member,'avatar')} alt="" />
                                         </div>
                                         <div className="member-info">
                                             <h2>{member.name}</h2>
-                                            <p>Joined: 3 days ago.</p>
+                                            <p>Joined: {moment(member.created).fromNow()}</p>
                                         </div>
                                     </div>
                                 )
@@ -317,7 +291,7 @@ class Messenger extends Component {
 
 
 
-                        </div>
+                        </div> </div>:null}
                     </div>
 
                 </div>

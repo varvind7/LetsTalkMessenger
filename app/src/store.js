@@ -24,6 +24,16 @@ export default class Store {
         }
     }
 
+    addUserToChannel(channelId,userId) {
+       
+        const channel = this.channels.get(channelId);
+        if(channel) {
+            channel.members=channel.members.set(userId,true);
+            this.channels = this.channels.set(channelId,channel);
+            this.update();
+        }
+    }
+
     searchUsers(search = ""){
         let searchItems = new OrderedMap();
         if(_.trim(search).length) {
@@ -67,7 +77,9 @@ export default class Store {
 
         const channelId = _.get(message, 'channelId')
         if (channelId) {
-            const channel = this.channels.get(channelId);
+            let channel = this.channels.get(channelId);
+            channel.isNew = false;
+            channel.lastMessage = _.get(message,'body','')
             channel.messages = channel.messages.set(id, true);
             this.channels = this.channels.set(channelId, channel);
         }
@@ -101,17 +113,22 @@ export default class Store {
     }
 
     getMembersFromChannel(channel) {
-        const members = [];
+        let members = new OrderedMap();
 
         if (channel) {
             // eslint-disable-next-line array-callback-return
             channel.members.map((value, key) => {
-                const member = users.get(key);
-                members.push(member);
+                const user = users.get(key);
+                const loggedUser = this.getCurrentUser();
+                if(_.get(loggedUser,'_id')!== _.get(user,'_id'))
+                {
+                    members=members.set(key,user);
+                }
+                
             });
         }
 
-        return members;
+        return members.valueSeq();
     }
 
     update() {

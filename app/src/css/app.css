@@ -194,8 +194,7 @@ body {
   padding-left: 10px;
 }
 .messages .message .message-body .message-text {
-  background: #2c3e50;
-  color: ivory;
+  background: rgba(0, 0, 0, 0.05);
   padding: 10px;
   border-radius: 10px;
 }
@@ -215,7 +214,8 @@ body {
   cursor: pointer;
   display: flex;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  padding: 8px 0;
+  padding: 8px;
+  overflow: hidden;
 }
 .chanels .chanel .user-image {
   width: 30px;
@@ -228,13 +228,17 @@ body {
 .chanels .chanel .chanel-info {
   flex-grow: 1;
   padding-left: 8px;
+  padding-right: 8px;
+  overflow: hidden;
 }
 .chanels .chanel .chanel-info h2 {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 400;
+  white-space: nowrap;
 }
 .chanels .chanel .chanel-info p {
   font-size: 12px;
+  white-space: nowrap;
 }
 .chanels .chanel.active {
   background: rgba(0, 0, 0, 0.05);
