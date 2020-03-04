@@ -28,9 +28,23 @@ var _package = require('../package.json');
 
 var _net = require('net');
 
+var _appRouter = require('./app-router.js');
+
+var _appRouter2 = _interopRequireDefault(_appRouter);
+
+var _models = require('./models');
+
+var _models2 = _interopRequireDefault(_models);
+
+var _database = require('./database.js');
+
+var _database2 = _interopRequireDefault(_database);
+
+var _mongodb = require('mongodb');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var PORT = 3000;
+var PORT = 3001;
 var app = (0, _express2.default)();
 app.server = _http2.default.createServer(app);
 
@@ -44,64 +58,87 @@ app.use(_bodyParser2.default.json({
     limit: '50mb'
 }));
 
+//connect to mongo Database
+
+new _database2.default().connect().then(function (db) {
+    console.log("Succesfully connected to database");
+    app.db = db;
+}).catch(function (err) {
+    throw err;
+});
+
+/*
+new Database().connect((err, db) => {
+    if(err){
+        throw(err);
+    }
+    console.log("Successful connected to database. ");
+    app.db = db;
+}); */
+//End connect to mongo db
+
+app.models = new _models2.default(app);
+app.routers = new _appRouter2.default(app);
+
 var WebSocket = require('ws');
 
 app.ws = new WebSocket.Server({
     server: app.server
 });
 
-var clients = [];
+/*
+let clients = [];
 
-app.ws.on('connection', function (socket) {
+app.ws.on('connection', (socket) => {
 
-    var userId = clients.length + 1;
+    const userId = clients.length + 1;
 
     socket.userId = userId;
-
-    var newClient = {
+    
+    const newClient = {
         ws: socket,
-        userId: userId
+        userId: userId,
     };
 
     clients.push(newClient);
     console.log('New Client connected', userId);
     // listen to client
-    socket.on('message', function (message) {
+    socket.on('message', (message) => {
         // socket.send(message +""+ new Date());
         console.log('Message from', message);
     });
 
-    socket.on('close', function () {
+    socket.on('close', () => {
         console.log('Client with userId', userId, 'is disconnected');
 
-        clients = clients.filter(function (client) {
-            return client.userId !== userId;
-        });
+        clients = clients.filter((client) => client.userId !== userId);
     });
 });
 
-app.get('/', function (req, res) {
-    res.json({
-        version: _package.version
-    });
+
+app.get('/', (req, res) => {
+    res.json ({
+        version: version 
+    }) 
 });
 
-app.get('/api/all_connections', function (req, res, next) {
+app.get('/api/all_connections', (req, res, next) => {
     return res.json({
-        people: clients
-    });
+        people: clients,
+    })
 });
 
-setInterval(function () {
+setInterval(() => {
     // each 3 sec the function executes
-    console.log('There are', clients.length, 'clients in connection');
-    if (clients.length > 0) {
-        clients.forEach(function (client) {
-            var msg = 'Hey ID ' + client.userId + ' this is a message from Server';
+    console.log('There are', clients.length ,'clients in connection');
+    if(clients.length > 0) {
+        clients.forEach((client) => {
+            const msg = `Hey ID ${client.userId} this is a message from Server`;
             client.ws.send(msg);
         });
     }
-}, 3000);
+}, 3000)
+*/
 
 app.server.listen(process.env.PORT || PORT, function () {
     console.log('App is running on port ' + app.server.address().port);
