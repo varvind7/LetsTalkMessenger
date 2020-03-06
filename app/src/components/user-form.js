@@ -45,9 +45,7 @@ export default class UserForm extends Component {
                 if(this.props.onClose){
                     this.props.onClose();
                 }
-                this.setState({
-                    message: null,
-                });
+                
             }).catch((err) => {
                 console.log("err:",err);
                 this.setState({

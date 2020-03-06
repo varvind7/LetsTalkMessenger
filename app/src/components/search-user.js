@@ -16,8 +16,8 @@ export default class SearchUser extends Component {
 
     }
     render() {
-        const {store, search} = this.props;
-        const users = store.searchUsers(search);
+        const {store} = this.props;
+        const users = store.getSearchUsers();
 
 
         return <div className="search-user">

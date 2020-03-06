@@ -178,7 +178,10 @@ class Messenger extends Component {
                                 this.setState({
                                     searchUser: searchUserText,
                                     showSearchUser:true,
+                                },()=> {
+                                    store.startSearchUsers(searchUserText);
                                 });
+
                             }
                         }
                                 type="text" value={this.state.searchUser} />
@@ -196,7 +199,7 @@ class Messenger extends Component {
                                 store.addUserToChannel(channelId,userId);
                             });
                         }}
-                        search={this.state.searchUser} store={store}/>:null}
+                         store={store}/>:null}
                              
                     </div> : this.renderChannelTitle(activeChannel) }
 
