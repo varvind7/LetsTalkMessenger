@@ -14,6 +14,16 @@ export default class User{
         this.users = new OrderedMap();
     }
 
+    find(query = {}, options = {}) {
+        
+        return new Promise((resolve, reject) => {
+            const db = this.app.db;
+            db.db("mongodbmessenger").collection('users').find(query, options).toArray((err, users) => {
+                return err ? reject(err) : resolve(users);
+            })
+        });
+    }
+
 
     search(q="") {
 

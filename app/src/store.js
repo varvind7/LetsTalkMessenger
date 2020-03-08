@@ -1,6 +1,7 @@
 import { OrderedMap } from 'immutable'
 import _ from 'lodash'
 import Service from './service';
+import Realtime from './realtime';
 
 
 // const users = OrderedMap({
@@ -21,18 +22,21 @@ export default class Store {
         this.activeChannelId = null;
         this.token =  this.getTokenFromLocalStore();
         this.user = this.getUserFromLocalStorage();
-        // this.user = {
-        //     _id: '1',
-        //     name: 'Gundeep',
-        //     created: new Date(),
-        //     avatar: 'https://api.adorable.io/avatars/100/abott@useravatar.png',
-        // }
-
         this.users = new OrderedMap();
         this.search = {
             users: new OrderedMap(),
         }
         
+        this.realtime = new Realtime(this);
+    }
+    addUserToCache(user){
+        user.avatar = this.loadUserAvatar(user);
+        const id = `${user._id}`;
+        this.users = this.users.set(id, user);
+        this.update();
+    }
+    getUserTokenId() {
+        return _.get(this.token, '_id', null);
     }
     loadUserAvatar(user) {
 
@@ -261,9 +265,17 @@ export default class Store {
         const channelId = _.get(message, 'channelId')
         if (channelId) {
             let channel = this.channels.get(channelId);
+            console.log('Channel:', channel);
             channel.isNew = false;
-            channel.lastMessage = _.get(message,'body','')
+            channel.lastMessage = _.get(message,'body','');
+
+            const obj = {
+                action: 'create_channel',
+                payload: channel
+            }
+            this.realtime.send(obj);
             channel.messages = channel.messages.set(id, true);
+            channel.isNew = false;
             this.channels = this.channels.set(channelId, channel);
         }
 

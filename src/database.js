@@ -12,7 +12,6 @@ export default class Database{
         return new Promise((resolve, reject) => {
         
             MongoClient.connect(URL, (err,db) => {
-                console.log("db connected broooooo see",db);
                 //useUnifiedTopology: true;
                 return err ? reject(err) : resolve(db);    
             });

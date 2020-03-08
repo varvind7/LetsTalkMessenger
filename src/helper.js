@@ -4,3 +4,7 @@ export const isEmail = (email) => {
 
     return regex.test(email);
 }
+
+export const toString = (id) => {
+    return `${id}`;
+}
