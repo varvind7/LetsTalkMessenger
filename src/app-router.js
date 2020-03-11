@@ -1,5 +1,6 @@
 import moment from 'moment';
 import _ from 'lodash';
+import { response } from 'express';
 
 export const START_TIME = new Date();
 export default class Approuter{
@@ -131,6 +132,40 @@ export default class Approuter{
                 })
             })
         })
+
+         /**
+         * @endpoint /api/channels/:id
+         *  @method: GET
+         **/
+
+         app.get('/api/channels/:id', (req, res, next) => {
+
+            const channelId = _.get(req, 'params.id');
+            if(!channelId){
+                return res.status(404).json({error: {message: "Not Found."}});
+            }
+            app.models.channel.load(channelId).then((channel) => {
+
+                //fetch all users belonging to the member id
+                const members = channel.members;
+                const query = {
+                    _id: {$in: members}
+                }
+                const options = {_id: 1, name: 1, created: 1, password:0};
+                app.models.user.find(query, options).then((users) => {
+                    channel.users = users;
+                    return res.status(200).json(channel);
+
+                }).catch((err) => {
+                    return res.status(404).json({error: {message: "Not Found."}}); 
+                });
+
+                
+
+            }).catch((err) => {
+                return res.status(404).json({error: {message: "Not Found."}});
+            });
+         });
 
 
     }

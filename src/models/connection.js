@@ -27,11 +27,66 @@ export default class Connection {
     doTheJob(socketId, msg){
         const action = _.get(msg, 'action');
         const payload = _.get(msg, 'payload');
+        const connection = this.connections.get(socketId);
+
         switch(action) {
+
+
+
+            case 'create_message':
+
+                    if(connection.isAuthenticated){
+
+                        let messageObject = payload;
+                        messageObject.userId = _.get(connection,'userId');
+                        console.log("Got message from client about creating new message", messageObject);
+
+                        this.app.models.message.create(messageObject).then((message) =>{
+
+                            console.log("Message final bhai:",message);
+
+                            const channelId = _.toString(_.get(message,'channelId'));
+                            this.app.models.channel.load(channelId).then((channel) => {
+                                console.log("Channel of the message vla channel is",channel);
+
+                                const memberIds = _.get(channel, 'members', []);
+
+                                _.each(memberIds, (memberId) => {
+
+                                    memberId = _.toString(memberId);
+                                    const memberConnections = this.connections.filter((c) => _.toString(c.userId) === memberId)
+                                    memberConnections.forEach((connection) => {
+                                        const ws = connection.ws;
+                                        this.send(ws, {
+
+                                            action: 'message_added',
+                                            payload: message,
+                                        })
+                                    })
+
+                                });
+                            });
+
+
+                        }).catch(err => {
+
+                            //send back to the socket client who sent this message with error
+                            const ws = connection.ws;
+                            this.send(ws, {
+                                action: 'create_message_error',
+                                payload: payload,
+                            });
+                        })
+
+                    }
+
+                    
+                break
+
             case 'create_channel':
                 {
                     const channel = payload;
-                    const connection = this.connections.get(socketId);
+                    
                     const userId = connection.userId;
                     channel.userId = userId;
                     this.app.models.channel.create(channel).then((channelObject) => {

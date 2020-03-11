@@ -248,7 +248,7 @@ class Messenger extends Component {
                                             <img src={_.get(user,'avatar')} alt="" />
                                         </div>
                                         <div className="message-body">
-                                            <div className="message-author">{message.me ? 'You ' : _.get('user','name')} says:</div>
+                                            <div className="message-author">{message.me ? 'You ' : _.get(message,'user.name')} says:</div>
 
                                             <div className="message-text">
                                                 {this.renderMessage(message)}
@@ -299,7 +299,7 @@ class Messenger extends Component {
                                             <img src={_.get(member,'avatar')} alt="" />
                                         </div>
                                         <div className="member-info">
-                                            <h2>{member.name}</h2>
+                                            <h2>{_.get(member,'name')}</h2>
                                             <p>Joined: {moment(member.created).fromNow()}</p>
                                         </div>
                                     </div>

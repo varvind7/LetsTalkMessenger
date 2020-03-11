@@ -31,9 +31,11 @@ export default class Store {
     }
     addUserToCache(user){
         user.avatar = this.loadUserAvatar(user);
-        const id = `${user._id}`;
+        const id = _.toString(user._id);
         this.users = this.users.set(id, user);
         this.update();
+
+        return user;
     }
     getUserTokenId() {
         return _.get(this.token, '_id', null);
@@ -166,7 +168,7 @@ export default class Store {
             email: userEmail,
             password:password
         }
-        console.log("Trying to login",user);
+        //console.log("Trying to login",user);
         return new Promise((resolve, reject) => {
             //call to backend
             this.service.post('api/users/login',user).then((response) => {
@@ -177,7 +179,11 @@ export default class Store {
                 const user = _.get(accessToken,'user');
                 this.setCurrentUser(user);
                 this.setUserToken(accessToken);
-                console.log("Got user login callback from server:",accessToken);
+
+                //call to realtime and connect again to socket server
+                this.realtime.connect();
+
+                //console.log("Got user login callback from server:",accessToken);
             }).catch((err) => {
                 //login error
                 console.log("Got an error from server",err);
@@ -253,8 +259,37 @@ export default class Store {
         return channel;
     }
 
+    setMessage(message){
+
+        const id = _.toString(_.get(message, '_id'));
+        this.messages = this.messages.set(id, message);
+        const channelId  = _.toString(_.get(message,'channelId'));
+        const channel = this.channels.get(channelId);
+
+        if(channel){
+            channel.messages = channel.messages.set(id,true);
+        }else{
+            //fetch to the server with channel info
+            this.service.get(`api/channels/${channelId}`).then((response) => {
+                const channel =_.get(response,'data');
+                
+                // const users = _.get(channel, 'users');
+                // _.each(users, (user) => {
+                //     this.addUserToCache(user);
+                // });
+                // this.channels = this.channels.set(channel,channel);
+
+                this.realtime.onAddChannel(channel);
+
+            } );
+        }
+        this.update();
+    }
+
     addMessage(id, message = {}) {
         //we need to add user object who is author of this message
+
+        console.log("Hey we need to send this msg to the backend",message);
         const user = this.getCurrentUser();
         message.user = user;
 
@@ -274,6 +309,17 @@ export default class Store {
                 payload: channel
             }
             this.realtime.send(obj);
+
+            //send to the server via websocket to create new message and notify to the other member
+
+            this.realtime.send(
+                {
+                    action: 'create_message',
+                    payload: message,
+                }
+
+            );
+
             channel.messages = channel.messages.set(id, true);
             channel.isNew = false;
             this.channels = this.channels.set(channelId, channel);
