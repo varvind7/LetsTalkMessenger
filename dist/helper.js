@@ -9,4 +9,8 @@ var isEmail = exports.isEmail = function isEmail(email) {
 
     return regex.test(email);
 };
+
+var toString = exports.toString = function toString(id) {
+    return "" + id;
+};
 //# sourceMappingURL=helper.js.map

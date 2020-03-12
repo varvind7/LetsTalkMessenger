@@ -52,7 +52,7 @@ export default class Approuter{
             
          });
 
-           /**
+        /**
          * @endpoint /api/users/me
          * method should be GET @method: GET
          **/
@@ -167,6 +167,53 @@ export default class Approuter{
             });
          });
 
+        /**
+         * @endpoint /api/me/channels
+         * @method: GET
+         **/
 
+        app.get('/api/me/channels', (req, res, next) => {
+
+            let tokenId = req.get('authorization');
+
+            if(!tokenId) {
+                //get token from query
+
+                tokenId = _.get(req,'query.auth');
+            }
+            console.log("daddaADDAD",tokenId);
+            app.models.token.loadTokenAndUser(tokenId).then((token) => {
+                const userId = token.userId;
+                // const query = {
+                //     members: {$all: [userId]}
+                // };
+
+                const query = [
+                
+                ];
+                // const query = [
+                //     {
+                //         $lookup: {
+                //             from: 'users',
+                //             localField: 'members' ,
+                //             foreignField: '_id',
+                //             as: 'users',
+                //         }
+                //     }
+                // ];
+                console.log("adsad",query)
+                app.models.channel.aggregate2(query).then((channels) => {
+                    return res.status(200).json(channels);
+                }).catch(err =>{
+                    return res.status(404).json({error: {message: "Not found."}});
+                }) 
+            }).catch(err => {
+                return res.status(401).json({
+                    error: "Access denied."
+                })
+            });
+
+            // return res.json({it: "works"});
+        });
     }
 }

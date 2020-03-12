@@ -28,6 +28,27 @@ export default class Store {
         }
         
         this.realtime = new Realtime(this);
+        this.fetchUserChannels();
+    }
+
+    fetchUserChannels(){
+        const userToken = this.getUserTokenId();
+        // const userToken = _.get(this.token,'_id');
+        if(userToken){
+            console.log("dasd1",userToken);
+            const options = {
+                headers:{
+                    authorization: userToken,
+                }
+            }
+            console.log("dasd2",options);
+            this.service.get(`api/me/channels`, options).then((response) => {
+                console.log("dasd3",response.data);
+                const channels = response.data;
+            }).catch((err) => {
+                console.log("An error fetching user channels", err.response);
+            }) 
+        }
     }
     addUserToCache(user){
         user.avatar = this.loadUserAvatar(user);
@@ -182,7 +203,9 @@ export default class Store {
 
                 //call to realtime and connect again to socket server
                 this.realtime.connect();
-
+                
+                //begin fetching user's channels
+                this.fetchUserChannels(); 
                 //console.log("Got user login callback from server:",accessToken);
             }).catch((err) => {
                 //login error

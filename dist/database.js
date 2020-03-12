@@ -24,7 +24,7 @@ var Database = function () {
             return new Promise(function (resolve, reject) {
 
                 _mongodb.MongoClient.connect(URL, function (err, db) {
-                    useUnifiedTopology: true;
+                    //useUnifiedTopology: true;
                     return err ? reject(err) : resolve(db);
                 });
             });

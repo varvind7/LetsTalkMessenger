@@ -8,6 +8,27 @@ export default class Channel {
         this.channels =  new OrderedMap();
     }
 
+    aggregate2(q){
+        console.log(q);
+        return new Promise((resolve, reject) => {
+            console.log("hi");
+            this.app.db.db("mongodbmessenger").collection('channels').aggregate(q, (err, results) => {
+                console.log("hi2", resolve(results));
+                return err ? reject(err) : resolve(results);
+            });
+        });
+    }
+
+    find(q, options = {}){
+        console.log(q);
+        return new Promise((resolve, reject) => {
+            this.app.db.db("mongodbmessenger").collection('channels').find(q, options).toArray((err, results) => {
+                console.log("hi2--->>>", results);
+                return err ? reject(err) : resolve(results);
+            });
+        });
+    }
+
     load(id) {
         
         return new Promise( (resolve,reject) => {
