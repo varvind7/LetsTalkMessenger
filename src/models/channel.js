@@ -12,7 +12,7 @@ export default class Channel {
         console.log(q);
         return new Promise((resolve, reject) => {
             console.log("hi");
-            this.app.db.db("mongodbmessenger").collection('channels').aggregate(q, (err, results) => {
+            this.app.db.db("mongodbmessenger").collection('channels').aggregate(q).toArray((err, results) => {
                 console.log("hi2", resolve(results));
                 return err ? reject(err) : resolve(results);
             });
@@ -30,28 +30,22 @@ export default class Channel {
     }
 
     load(id) {
-        
-        return new Promise( (resolve,reject) => {
 
+        return new Promise((resolve, reject) => {
             id = _.toString(id);
-        //first find in cache
-        const channelFromCache = this.channels.get(id);
-
-        if(channelFromCache){
-            return resolve(channelFromCache);    
-        }
-        //lets also find in db
-        this.findById(id).then((c) => {
-            // console.log("c di value bc",c);
-            return resolve(c);
-        }).catch((err) =>{
-            return reject(err);
-        }) ;
-
-
-        });
-
-
+            // first find in cache
+            const channelFromCache = this.channels.get(id);
+            if (channelFromCache) {
+				return resolve(channelFromCache);
+            }
+            // let find in db
+            this.findById(id).then((c) => {
+                this.channels = this.channels.set(id, c);
+                return resolve(c);
+            }).catch((err) => {
+                return reject(err);
+            })
+        })
     }
 
     findById(id){

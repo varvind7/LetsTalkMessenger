@@ -8,6 +8,60 @@ export default class Message{
         this.messages = new OrderedMap();
     }
 
+    getChannelMessages(channelId, limit = 50 , offset = 0){
+        
+        return new Promise((resolve, reject) => {
+            channelId = new ObjectId(channelId);
+            const query =[
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'userId',
+                        foreignField: '_id',
+                        as: 'user'
+                    }
+                },
+                {
+                    $match: {
+                        'channelId': {$eq: channelId},
+                    },
+                },
+                {
+                    $project: {
+                        _id: true,
+                        channelId: true,
+                        user: {$arrayElemAt: ['$user', 0]},
+                        userId: true,
+                        body: true,
+                        created: true,
+                    }
+                },
+                {
+                    $project: {
+                        _id: true,
+                        channelId: true,
+                        user: {_id: true, name: true, created: true, online: true},
+                        userId: true,
+                        body: true,
+                        created: true,
+                    }
+                },
+                {
+                    $limit: limit
+                },
+                {
+                    $skip: offset,
+                },
+                {
+                    $sort: {created: 1}
+                }
+            ];
+            this.app.db.db("mongodbmessenger").collection('messages').aggregate(query).toArray((err, results) => {
+                console.log("hi2", resolve(results));
+                return err ? reject(err) : resolve(results);
+            });
+        });
+    }
     create(obj){
 
         return new Promise( (resolve, reject) => {
@@ -34,21 +88,24 @@ export default class Message{
                 if(err){
                     return reject(err);
                 }
-                
-                    this.app.models.user.load(_.toString(userId)).then((user) =>{
-                        _.unset(user, 'password');
-                        _.unset(user, 'email');
+                //let us update last message field to channel
+                this.app.db.db("mongodbmessenger").collection('channels').findOneAndUpdate({_id: channelId}, {
+                    $set: {
+                        lastMessage: _.get(message, 'body', ''),
+                        updated: new Date(),
+                    }
+                })
+                this.app.models.user.load(_.toString(userId)).then((user) =>{
+                    _.unset(user, 'password');
+                    _.unset(user, 'email');
 
-                        message.user = user;
+                    message.user = user;
 
-                        return resolve(message);
-                    }).catch((err) => {
-                        return reject(err);
-                    });
-                
-            // console.log("I am hereeeeeeeeeeeeeeeeeee");
-            // return err ? reject(err) : resolve(message);
-        });    
+                    return resolve(message);
+                }).catch((err) => {
+                    return reject(err);
+                });
+            });    
 
         });
 

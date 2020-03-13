@@ -41,10 +41,13 @@ export default class Store {
                     authorization: userToken,
                 }
             }
-            console.log("dasd2",options);
             this.service.get(`api/me/channels`, options).then((response) => {
-                console.log("dasd3",response.data);
                 const channels = response.data;
+                _.each(channels, (c) => {
+                    this.realtime.onAddChannel(c);
+                });
+                const firstChannelId = _.get(channels, '[0]._id', null);
+                this.fetchChannelMessages(firstChannelId);
             }).catch((err) => {
                 console.log("An error fetching user channels", err.response);
             }) 
@@ -168,11 +171,18 @@ export default class Store {
         this.update();
     }
 
+    clearCacheData(){
+        this.channels = this.channels.clear();
+        this.messages = this.messages.clear();
+        this.users = this.users.clear();
+    }
+
     signOut(){
         const userId = `${_.get(this.user, '_id',null)}`;
         this.user = null;
         localStorage.removeItem('me');
         localStorage.removeItem('token');
+        this.clearCacheData()
         if(userId)
         {
             this.users = this.users.remove(userId);
@@ -270,11 +280,34 @@ export default class Store {
         return this.user;
     }
 
+    fetchChannelMessages(channelId){
+ 
+        let channel = this.channels.get(channelId);
+        if (channel && !_.get(channel, 'isFetchedMessages')){
+            const token = _.get(this.token, '_id');//this.token._id;
+            const options = {
+                headers: {
+                    authorization: token,
+                }
+            }
+            this.service.get(`api/channels/${channelId}/messages`, options ).then((response) => {
+                channel.isFetchedMessages = true;
+                const messages = response.data;
+                _.each(messages, (message) => {
+                    this.realtime.onAddMessage(message);
+                });
+                this.channels = this.channels.set(channelId, channel);
+            }).catch((err) => {
+                console.log("An error fetching channel 's messages", err);
+            })
+        }
+    }
+
     setActiveChannelId(id) {
 
         this.activeChannelId = id;
+        this.fetchChannelMessages(id);
         this.update();
-
     }
 
     getActiveChannel() {
@@ -282,7 +315,7 @@ export default class Store {
         return channel;
     }
 
-    setMessage(message){
+    setMessage(message, notify = false){
 
         const id = _.toString(_.get(message, '_id'));
         this.messages = this.messages.set(id, message);
@@ -291,6 +324,9 @@ export default class Store {
 
         if(channel){
             channel.messages = channel.messages.set(id,true);
+            channel.lastMessage = _.get(message, 'body', '');
+            channel.notify = notify;
+            this.channels = this.channels.set(channelId, channel);
         }else{
             //fetch to the server with channel info
             this.service.get(`api/channels/${channelId}`).then((response) => {
@@ -360,7 +396,7 @@ export default class Store {
         this.update();
     }
     getChannels() {
-        this.channels = this.channels.sort((a, b) =>new Date(b.created) - new Date(a.created));
+        this.channels = this.channels.sort((a, b) => a.updated < b.updated);//||new Date(b.created) - new Date(a.created)
         return this.channels.valueSeq();
     }
 
