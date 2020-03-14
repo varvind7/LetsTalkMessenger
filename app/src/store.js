@@ -184,19 +184,36 @@ export default class Store {
         this.users = this.users.clear();
     }
 
-    signOut(){
-        const userId = `${_.get(this.user, '_id',null)}`;
+    signOut() {
+
+        const userId = _.toString(_.get(this.user, '_id', null));
+        const tokenId = _.get(this.token, '_id', null); //this.token._id;
+        // request to backend and loggout this user
+        const options = {
+            headers: {
+                authorization: tokenId,
+            }
+        };
+        this.service.get('api/me/logout', options);
         this.user = null;
         localStorage.removeItem('me');
         localStorage.removeItem('token');
-        this.clearCacheData()
-        if(userId)
-        {
+        this.clearCacheData();
+        if (userId) {
             this.users = this.users.remove(userId);
-
         }
-        
+
         this.update();
+    }
+    register(user){
+        return new Promise((resolve, reject) => {
+            this.service.post('api/users', user).then((response) => {
+                console.log("use created", response.data);
+                return resolve(response.data);
+            }).catch(err => {
+                return reject("An error create your account");
+            })
+        });
     }
     login(email=null, password=null){
         const userEmail = _.toLower(email);

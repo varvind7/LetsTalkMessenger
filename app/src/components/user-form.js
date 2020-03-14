@@ -8,7 +8,9 @@ export default class UserForm extends Component {
         super(props);
         this.state = {
             message: null,
+            isLogin: true,
             user: {
+                name: '',
                 email: '',
                 password: ''
             }
@@ -35,26 +37,44 @@ export default class UserForm extends Component {
     }
     
     onSubmit(event){
-        const {user} = this.state;
+        const {user, isLogin} = this.state;
         const {store} = this.props;
         event.preventDefault();
         this.setState({
             message: null,
         }, () => {
-            store.login(user.email, user.password).then((user) => {
-                if(this.props.onClose){
-                    this.props.onClose();
-                }
-                
-            }).catch((err) => {
-                console.log("err:",err);
-                this.setState({
-                    message: {
-                        body: err,
-                        type: 'error',
+            if(isLogin) {
+                store.login(user.email, user.password).then((user) => {
+                    if(this.props.onClose){
+                        this.props.onClose();
                     }
+                    
+                }).catch((err) => {
+                    console.log("err:",err);
+                    this.setState({
+                        message: {
+                            body: err,
+                            type: 'error',
+                        }
+                    });
                 });
-            });
+            } else {
+                store.register(user).then((_) => {
+                     this.setState({
+                         message: {
+                             body: 'User Created',
+                             type: 'Success'
+                         }
+                     }, () => {
+                         //login the new user
+                         store.login(user.email, user.password).then(() => {
+                            if(this.props.onClose){
+                                this.props.onClose();
+                            }
+                         })
+                     })
+                })
+            }
         })
     }
 
@@ -69,11 +89,15 @@ export default class UserForm extends Component {
 
     render(){
 
-        const {user, message} = this.state;
+        const {user, message, isLogin} = this.state;
         return(
             <div className="user-form" ref={(ref) => this.ref = ref}>
                 <form onSubmit={this.onSubmit} method="post">
                     {message ? <p className={classNames('app-message', _.get(message, 'type'))}> {_.get(message, 'body')}</p>: null}
+                    {!isLogin ? <div className="form-item">
+                        <label>Name</label>
+                        <input placeholder={'Full name'} onChange={this.onTextFieldChange} type={'text'} value={_.get(user,'name', '')} name={"name"} />
+                    </div> : null }
                     <div className="form-item">
                         <label>Email</label>
                         <input value={_.get(user, 'email')} onChange={this.onTextFieldChange}type="email" placeholder="Email address..." name="email" />
@@ -83,8 +107,13 @@ export default class UserForm extends Component {
                         <input value={_.get(user, 'password')} onChange={this.onTextFieldChange}type="password" placeholder="password" name="password" />
                     </div>
                     <div className="form-actions">
-                        <button type="button">Create an account</button>
-                        <button className="primary" type="submit">Sign In</button>
+                        {isLogin ? <button onClick={() => {
+                            this.setState({
+                                isLogin: false
+                            })
+                        }}
+                        type="button">Create an account</button> : null }
+                        <button className="primary" type="submit">{isLogin ? 'Sign In' : 'Create Account' }</button>
                     </div>
                 </form>
             </div>

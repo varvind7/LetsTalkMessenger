@@ -19,7 +19,6 @@ export default class User{
 
             // first update status of cache this.users
 
-
             this.users = this.users.update(userId, (user) => {
 
                 if (user) {

@@ -290,6 +290,30 @@ export default class Approuter{
             // return res.json({it: "works"});
         });
 
+        
+        /**
+         * @endpoint: /api/me/logout
+         * @method: GET
+         **/
 
+        /**
+         * @endpoint: /api/me/logout
+         * @method: GET
+         **/
+
+        app.get('/api/me/logout', (req, res, next) => {
+            let tokenId = req.get('authorization');
+            if (!tokenId) {
+                tokenId = _.get(req, 'query.auth');
+            }
+            app.models.token.loadTokenAndUser(tokenId).then((token) => {
+                app.models.token.logout(token);
+                return res.status(200).json({
+                    message: 'Successful.'
+                });
+            }).catch(err => {
+                return res.status(401).json({error: {message: 'Access denied'}});
+            })
+        })
     }
 }
