@@ -37,7 +37,12 @@ var Channel = function () {
             return new Promise(function (resolve, reject) {
                 console.log("hi");
                 _this.app.db.db("mongodbmessenger").collection('channels').aggregate(q, function (err, results) {
-                    console.log("hi2", resolve(results), err);
+                   if(err)
+                   {
+                    console.log("hi2 create class", resolve(results), err);
+
+                   }
+                    
                     return err ? reject(err) : resolve(results);
                 });
             });

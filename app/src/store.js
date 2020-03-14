@@ -31,6 +31,9 @@ export default class Store {
         this.fetchUserChannels();
     }
 
+    isConnected(){
+        return this.realtime.isConnected;
+    }
     fetchUserChannels(){
         const userToken = this.getUserTokenId();
         // const userToken = _.get(this.token,'_id');
@@ -54,7 +57,7 @@ export default class Store {
         }
     }
     addUserToCache(user){
-        user.avatar = this.loadUserAvatar(user);
+        user.avatar = this.loadUserAvatar(user._id);
         const id = _.toString(user._id);
         this.users = this.users.set(id, user);
         this.update();
@@ -64,9 +67,10 @@ export default class Store {
     getUserTokenId() {
         return _.get(this.token, '_id', null);
     }
-    loadUserAvatar(user) {
+    loadUserAvatar(id) {
+        console.log(id);
 
-        return `https://api.adorable.io/avatars/285/${user._id}.png`;
+        return `https://api.adorable.io/avatars/285/${id}.png`;
 
     }
     startSearchUsers(q="") {
@@ -144,10 +148,13 @@ export default class Store {
             }
 
             this.service.get('api/users/me',options).then((response) => {
+
+                console.log("im here")
                 // user is logged in with this token
 
                 const accessToken = response.data;
                 const user=_.get(accessToken,'user');
+                console.log(user._id);
                 this.setCurrentUser(user);
                 this.setUserToken(accessToken);
             }).catch(err => {

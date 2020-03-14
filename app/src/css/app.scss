@@ -336,10 +336,26 @@ body {
         padding: 9px;
         .user-image {
             width: 30px;
+            position: relative;
             img {
             width: 30px;
             height: 30ox;
             border-radius: 50%;
+            }
+            .user-status {
+                width: 8px;
+                height: 8px;
+                display:block ;
+                position: absolute;
+                right: 0;
+                bottom: 10px;
+                border: 1px solid #FFF;
+                background: #ccc;
+                border-radius: 50%;
+                &.online {
+                    background: $primary-color ;
+                }
+
             }
 
         }
@@ -535,5 +551,19 @@ h2.title {
         color: #FFF;
         border-color: $danger-color;
     }
+}
+
+.user-status {
+    font-size: 10px;
+    color: $body-color;
+    &.online {
+        color: $primary-color;
+    }
+}
+
+.app-warning-state {
+    font-size: 10px;
+    padding: 0 10px;
+    color: $danger-color;
 }
 

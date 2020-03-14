@@ -13,7 +13,11 @@ export default class Channel {
         return new Promise((resolve, reject) => {
             console.log("hi");
             this.app.db.db("mongodbmessenger").collection('channels').aggregate(q).toArray((err, results) => {
-                console.log("hi2", resolve(results));
+                if(err)
+                {
+                    console.log("hi2 aggregate 2", resolve(results));
+                }
+                
                 return err ? reject(err) : resolve(results);
             });
         });

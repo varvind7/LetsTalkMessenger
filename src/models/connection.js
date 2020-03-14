@@ -19,6 +19,75 @@ export default class Connection {
         return messageObject;
     }
 
+    sendToMembers(userId,obj) {
+
+
+        const query= [
+            {
+                $match: {
+                    members: {$all: [new ObjectID(userId)]}
+                }
+            },
+            {
+                $lookup: {
+                    from:'users',
+                    localField:'members',
+                    foreignField: '_id',
+                    as:'users'
+                }
+            },
+            {
+                $unwind : {
+                    path:'$users'
+                }
+            },
+            {
+                $match:{'users.online':{$eq:true}}
+            },
+            {
+                $group: {
+                    _id:"$users._id"
+                }
+            }
+        ];
+
+        const users =[];
+        this.app.db.db("mongodbmessenger").collection('channels').aggregate(query).toArray((err,results)=> {
+
+            console.log("found members:",results);
+            if(err)
+            {
+                console.log("Aggregate error Again!");
+            }
+            if(err===null && results) {
+                _.each(results,(result) => {
+                    const uid = _.toString(_.get(result,'_id'));
+                    if(uid) {
+                        users.push(uid);
+                    }
+                });
+                //list of all connection chatting with current user
+                const memberConnections = this.connections.filter((con) => _.includes(users,_.toString(_.get(con,'userId'))));
+                
+                if(memberConnections.size) {
+                    memberConnections.forEach((connection,key) => {
+                        //console.log("Matched members:",connection);
+                        const ws=connection.ws;
+                        this.send(ws,obj);
+                    })
+                }
+            }
+        })
+        
+    }
+
+    sendAll(obj) {
+        this.connections.forEach((con,key) => {
+            const ws=con.ws;
+
+            this.send(ws,obj);
+        })
+    }
     send(ws, obj) {
         const message = JSON.stringify(obj);
         ws.send(message);
@@ -144,6 +213,19 @@ export default class Connection {
                                 payload: 'You are aunthenticated'
                             }
                             this.send(connection.ws, obj);
+
+                            //send to all socket clients connection
+                            const userIdString = _.toString(userId);
+                            // this.sendAll({
+                            //     action:'user_online',
+                            //     payload:_.toString(userId)
+                            // });
+                            this.sendToMembers(userIdString,{
+                                action:'user_online',
+                                payload:_.toString(userId)
+                            });
+
+                            this.app.models.user.updateUserStatus(userIdString,true);
                         }).catch((err) => {
                             // Send login error
                             const obj = {
@@ -184,7 +266,32 @@ export default class Connection {
             })
             ws.on('close', () => {
                 // remove socket from cache
+
+                const closeConnection=this.connections.get(socketId);
+                const userId = _.toString(_.get(closeConnection,'userId',null));
                 this.connections = this.connections.remove(socketId);
+                if(userId) {
+                    //now find all socket clients matching
+                    const userConnections = this.connections.filter((con) => _.toString(_.get(con,'userId'))===userId);
+                    if(userConnections.size===0)
+                    {
+                        //client offline
+                        // this.sendAll({
+                        //     action:'user_offline',
+                        //     payload:userId
+                        // });
+                        this.sendToMembers(userId,{
+                            action:'user_offline',
+                            payload:userId
+                        });
+
+                        //update user offline
+                        this.app.models.user.updateUserStatus(userId,false);
+                    }
+
+                }
+
+
             });
         })
     }

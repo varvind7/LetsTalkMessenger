@@ -57,8 +57,12 @@ export default class Message{
                 }
             ];
             this.app.db.db("mongodbmessenger").collection('messages').aggregate(query).toArray((err, results) => {
-                console.log("hi2", resolve(results));
-                return err ? reject(err) : resolve(results);
+                //console.log("hi2 aggregate", resolve(results));
+                if(err)
+                {
+                    console.log("Im having an error")
+                }
+                return err ?reject(err) : resolve(results);
             });
         });
     }

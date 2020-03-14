@@ -51,7 +51,7 @@ class Messenger extends Component {
             const name = _.get(user,'name');
             names.push(name);
         });
-        console.log(names);
+        //console.log(names);
         let title = _.join(names, ',');
 
         if(!title && _.get(channel, 'isNew')){
@@ -305,13 +305,15 @@ class Messenger extends Component {
                         <div className="members">
                             {members.map((member, key) => {
 
+                                const isOnline = _.get(member,'online',false);
                                 return (
                                     <div key={key} className="member">
                                         <div className="user-image">
                                             <img src={_.get(member,'avatar')} alt="" />
+                                            <span className={classNames('user-status', {'online':isOnline})}/>
                                         </div>
                                         <div className="member-info">
-                                            <h2>{_.get(member,'name')}</h2>
+                                <h2>{_.get(member,'name')} - <span className={classNames('user-status', {'online':isOnline})}>{isOnline? 'Online':'Offline'}</span></h2>
                                             <p>Joined: {moment(member.created).fromNow()}</p>
                                         </div>
                                     </div>

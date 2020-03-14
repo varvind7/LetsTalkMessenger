@@ -13,6 +13,32 @@ export default class User{
         
         this.users = new OrderedMap();
     }
+    updateUserStatus(userId, isOnline = false) {
+
+        return new Promise((resolve, reject) => {
+
+            // first update status of cache this.users
+
+
+            this.users = this.users.update(userId, (user) => {
+
+                if (user) {
+                    user.online = isOnline;
+                }
+
+                return user;
+            });
+            console.log("signing off bitches!")
+            const query = {_id: new ObjectID(userId)};
+            const updater = {$set: {online: isOnline}};
+            const db = this.app.db;
+            db.db("mongodbmessenger").collection('users').update(query, updater, (err, info) => {
+                return err ? reject(err) : resolve(info);
+            });
+
+
+        })
+    }
 
     find(query = {}, options = {}) {
         

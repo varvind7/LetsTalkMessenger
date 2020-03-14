@@ -1,18 +1,33 @@
 import _ from 'lodash';
 import { OrderedMap } from 'immutable';
-export default class Realtime{
+export default class Realtime {
     constructor(store) {
         this.store = store;
         this.ws = null;
         this.isConnected = false;
         this.connect();
+        this.reconnect();
+    }
+
+    reconnect() {
+        const store=this.store;
+
+        window.setInterval(()=>{
+
+            const user = store.getCurrentUser();
+            if(user && !this.isConnected) {
+                this.connect();
+
+            }
+
+        },3000)
     }
 
     decodeMessage(msg) {
         let message = {};
-        try{
+        try {
             message = JSON.parse(msg);
-        } catch(err) {
+        } catch (err) {
             console.log(err);
         }
         return message;
@@ -21,13 +36,23 @@ export default class Realtime{
     readMessage(msg) {
         const store = this.store;
         const currentUser = store.getCurrentUser();
-        const currentUserId = _.toString(_.get(currentUser,'_id'));
+        const currentUserId = _.toString(_.get(currentUser, '_id'));
         const message = this.decodeMessage(msg);
         const action = _.get(message, 'action', '');
-        const payload= _.get(message, 'payload');
+        const payload = _.get(message, 'payload');
 
-        switch(action) {
-            
+        switch (action) {
+
+            case 'user-offline':
+                this.onUpdateUserStatus(payload, false);
+                break;
+
+
+            case 'user_online':
+                const isOnline = true;
+                this.onUpdateUserStatus(payload, isOnline);
+                break;
+
             case 'message_added':
                 const activeChannel = store.getActiveChannel();
                 let notify = _.get(activeChannel, '_id') !== _.get(payload, 'channelId') && currentUserId !== _.get(payload, 'userId');
@@ -35,37 +60,53 @@ export default class Realtime{
                 break;
 
             case 'channel_added':
-                    this.onAddChannel(payload);
+                this.onAddChannel(payload);
                 break;
             default:
                 break;
         }
 
     }//, notify = false
-    onAddMessage(payload, notify = false){
+
+    onUpdateUserStatus(userId, isOnline = false) {
+
         const store = this.store;
-        let user = _.get(payload,'user');           
+        store.users = store.users.update(userId, (user) => {
+
+            if (user) {
+                user.online = isOnline;
+            }
+
+            return user;
+        });
+
+        store.update();
+
+    }
+    onAddMessage(payload, notify = false) {
+        const store = this.store;
+        let user = _.get(payload, 'user');
         //add the user to cache
         user = store.addUserToCache(user);
         const currentUser = store.getCurrentUser();
-        const currentUserId = _.toString(_.get(currentUser,'_id'));
+        const currentUserId = _.toString(_.get(currentUser, '_id'));
         const messageObject = {
             _id: payload._id,
-            body: _.get(payload,'body', ''),
-            userId: _.get(payload,'userId'),
-            channelId: _.get(payload,'channelId'),
-            created: _.get(payload,'created', new Date()),
-            me: currentUserId === _.toString(_.get(payload,'userId')),
+            body: _.get(payload, 'body', ''),
+            userId: _.get(payload, 'userId'),
+            channelId: _.get(payload, 'channelId'),
+            created: _.get(payload, 'created', new Date()),
+            me: currentUserId === _.toString(_.get(payload, 'userId')),
             user: user,
         };
- 
+
         store.setMessage(messageObject, notify);
     }
 
-    onAddChannel(payload){
+    onAddChannel(payload) {
 
         const store = this.store;
-        const channelId = _.toString(_.get(payload,'_id'));
+        const channelId = _.toString(_.get(payload, '_id'));
         const userId = `${payload.userId}`;
         const users = _.get(payload, 'users', []);
 
@@ -87,7 +128,7 @@ export default class Realtime{
             channel.members = channel.members.set(memberId, true);
         })
 
-        const channelMessages = store.messages.filter((m) => _.toString(m.channelId) === channelId); 
+        const channelMessages = store.messages.filter((m) => _.toString(m.channelId) === channelId);
         channelMessages.forEach((msg) => {
             const msgId = _.toString(_.get(msg, '_id'));
             channel.messages = channel.messages.set(msgId, true);
@@ -97,15 +138,15 @@ export default class Realtime{
 
     send(msg = {}) {
         const isConnected = this.isConnected;
-        if(isConnected){
+        if (this.ws && isConnected) {
             const messageString = JSON.stringify(msg);
             this.ws.send(messageString);
         }
     }
 
-    authentication(){
+    authentication() {
         const tokenId = this.store.getUserTokenId();
-        if(tokenId) {
+        if (tokenId) {
             const message = {
                 action: 'auth',
                 payload: `${tokenId}`
@@ -115,7 +156,7 @@ export default class Realtime{
 
     }
 
-    connect(){
+    connect() {
         const ws = new WebSocket('ws://localhost:3001');
         this.ws = ws;
         ws.onopen = () => {
@@ -133,6 +174,12 @@ export default class Realtime{
         ws.onclose = () => {
             console.log("You are disconnected");
             this.isConnected = false;
+           this.store.update();
+        }
+
+        ws.onerror = () => {
+            this.isConnected=false;
+            this.store.update();
         }
     }
 }
