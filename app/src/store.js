@@ -4,12 +4,6 @@ import Service from './service';
 import Realtime from './realtime';
 
 
-// const users = OrderedMap({
-//     '1': { _id: '1', email:'singh1x7@uwindsor.ca', name: "Gundeep", created: new Date(), avatar: 'https://api.adorable.io/avatars/100/abott@useravatar.png' },
-//     '2': { _id: '2', email:'singh1vp@uwindsor.ca', name: "Harnoor", created: new Date(), avatar: 'https://api.adorable.io/avatars/100/abott@user1avatar.png' },
-//     '3': { _id: '3', email:'balasubv@uwindsor.ca>', name: "Vicky", created: new Date(), avatar: 'https://api.adorable.io/avatars/100/abott@user2avatar.png' },
-//     '4': { _id: '4', email:'srini11c@uwindsor.ca', name: "Vishal", created: new Date(), avatar: 'https://api.adorable.io/avatars/100/abott@user3avatar.png' },
-// })
 
 export default class Store {
 

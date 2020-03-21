@@ -50,6 +50,7 @@ body, html {
 
 body {
   color: #2c3e50;
+  background-color: azure;
   font-size: 13px;
   font-family: "Open Sans", sans-serif;
 }
@@ -166,7 +167,7 @@ body {
   padding: 8px 15px;
 }
 .app-messenger .main .content .messenger-input .actions button.send {
-  background: #2ecc71;
+  background: slateblue;
   color: #FFF;
   border: 0 none;
   padding: 7px 15px;
@@ -202,7 +203,7 @@ body {
   justify-content: flex-end;
 }
 .messages .message.me .message-body .message-text {
-  background-color: #2ecc71;
+  background-color: slateblue;
   color: ivory;
 }
 
@@ -311,7 +312,7 @@ body {
   background: rgba(0, 0, 0, 0.05);
 }
 .chanels .chanel.notify .chanel-info p {
-  color: #2ecc71;
+  color: slateblue;
 }
 
 .members .member {
@@ -340,7 +341,7 @@ body {
   border-radius: 50%;
 }
 .members .member .user-image .user-status.online {
-  background: #2ecc71;
+  background: slateblue;
 }
 .members .member .member-info {
   padding-left: 8px;
@@ -368,7 +369,7 @@ h2.title {
 .toolbar span {
   line-height: 20px;
   height: 30px;
-  background: #2ecc71;
+  background: slateblue;
   color: #FFF;
   cursor: pointer;
   display: block;
@@ -430,7 +431,7 @@ h2.title {
   height: 50px;
   border: 0 none;
   background: none;
-  color: #2ecc71;
+  color: slateblue;
   font-weight: 600;
   font-size: 14px;
 }
@@ -513,14 +514,14 @@ h2.title {
   text-align: center;
 }
 .form-actions button.primary {
-  background: #2ecc71;
+  background: slateblue;
   color: #FFF;
 }
 
 .app-message {
   font-size: 12px;
   text-align: center;
-  border: 1px solid #2ecc71;
+  border: 1px solid slateblue;
   border-radius: 5px;
   margin: 10px 0;
 }
@@ -535,7 +536,7 @@ h2.title {
   color: #2c3e50;
 }
 .user-status.online {
-  color: #2ecc71;
+  color: slateblue;
 }
 
 .app-warning-state {
